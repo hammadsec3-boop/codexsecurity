@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certifications and Acknowledgements | Codex Security</title><meta name="description" content="Certifications earned and acknowledgements received by the Codex Security team.">
+<meta name="theme-color" content="#060D14">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"></head><body>
+<header><div class="wrap"><a class="logo" href="index.html"><svg width="30" height="30" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6DFA8"/><stop offset="1" stop-color="#B6822F"/></linearGradient></defs>
+<path d="M100 8 L178 52 V148 L100 192 L22 148 V52 Z" fill="none" stroke="url(#hg)" stroke-width="14" stroke-linejoin="miter"/>
+<path d="M145 72 L100 47 L55 72 L55 128 L100 153 L145 128 L118 128 L118 100 L82 100 L82 72 L118 72" fill="none" stroke="url(#hg)" stroke-width="11" stroke-linejoin="miter" stroke-linecap="square"/>
+</svg>Codex Security</a><nav><a href="index.html">Home</a><a href="services.html">Services</a><a href="pricing.html">Pricing</a><a href="team.html">Team</a><a href="certifications.html" aria-current="page">Certifications</a><a href="contact.html">Contact</a><a class="btn" href="contact.html" style="padding:10px 18px">Get a quote</a></nav></div></header>
+
+<div class="wrap pagehead"><div class="crumbs"><a href="index.html">Home</a> / <span aria-current="page">Certifications and Acknowledgements</span></div><h1>Certifications and acknowledgements</h1><p>Training completed and recognition earned by the Codex Security team.</p></div>
+<section style="padding-top:24px"><div class="wrap"><div class="tabs" role="group" aria-label="Filter"><button aria-pressed="true" data-f="All">All</button><button aria-pressed="false" data-f="Certification">Certifications</button><button aria-pressed="false" data-f="Acknowledgement">Acknowledgements</button></div>
+<div class="grid" id="list"><article class="card rec" data-kind="Acknowledgement"><div class="kind">Acknowledgement</div><h3>Security hall of fame recognition</h3><p><strong>Muhammad Hammad</strong></p><p>Recognised in the security halls of fame of leading global technology companies for responsibly reporting vulnerabilities.</p></article><article class="card rec" data-kind="Acknowledgement"><div class="kind">Acknowledgement</div><h3>Bug bounty recognition</h3><p><strong>M Kamran Malik</strong></p><p>Active bug bounty hunter with reported vulnerabilities in real-world applications and cloud environments.</p></article></div><p class="empty" id="empty" hidden>Nothing listed in this category yet.</p></div></section>
+<script>
+const b=document.querySelectorAll(".tabs button"),c=document.querySelectorAll("#list [data-kind]"),e=document.getElementById("empty");
+b.forEach(x=>x.addEventListener("click",()=>{b.forEach(y=>y.setAttribute("aria-pressed",y===x));let n=0;c.forEach(k=>{const s=x.dataset.f==="All"||k.dataset.kind===x.dataset.f;k.hidden=!s;if(s)n++});e.hidden=n>0}));
+</script><section class="alt"><div class="wrap" style="text-align:center"><h2>Ready to find your vulnerabilities first?</h2><p class="lead" style="margin-left:auto;margin-right:auto">Tell us what you need protected. We'll reply with scope, timeline and a quote.</p><div class="cta" style="justify-content:center"><a class="btn" href="contact.html">Request a security assessment</a><a class="btn ghost" href="services.html">See all services</a></div></div></section>
+<footer><div class="wrap"><span>&copy; 2026 Codex Security · Outplaying attackers</span><span><a href="mailto:contact@codexsecurity.co">contact@codexsecurity.co</a><a href="https://wa.me/447743740462">WhatsApp</a></span></div></footer>
+</body></html>
