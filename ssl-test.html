@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free SSL/TLS Test | Codex Security</title>
+<meta name="description" content="Test any website's SSL/TLS configuration for free and get an instant A to F grade, checking protocol, certificate, cipher strength and HSTS.">
+<meta name="theme-color" content="#060D14">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .tool-wrap{max-width:760px;margin:0 auto}
+  .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:30px;margin-top:10px}
+  .test-row{display:flex;gap:10px;flex-wrap:wrap}
+  .test-row input{flex:1;min-width:220px;padding:14px 16px;border-radius:8px;border:1.5px solid var(--line);background:#0A1826;color:var(--ink);font-size:16px}
+  .test-row input:focus{border-color:var(--gold-d)}
+  .test-row button{padding:14px 26px;border-radius:8px;border:0;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:#140D02;font-weight:700;font-size:15px;cursor:pointer}
+  .test-row button:disabled{opacity:.6;cursor:wait}
+  .disclosure{color:var(--mute-d);font-size:13px;margin-top:12px}
+  #result{margin-top:28px;display:none}
+  #result.show{display:block}
+  .grade-head{display:flex;align-items:center;gap:22px;margin-bottom:24px}
+  .grade-badge{width:84px;height:84px;border-radius:16px;display:grid;place-items:center;font:800 36px "Familjen Grotesk",sans-serif;flex:none}
+  .grade-A{background:rgba(95,191,143,.15);color:var(--low);border:1.5px solid var(--low)}
+  .grade-B{background:rgba(224,194,75,.15);color:var(--med);border:1.5px solid var(--med)}
+  .grade-C{background:rgba(224,152,75,.15);color:var(--high);border:1.5px solid var(--high)}
+  .grade-D,.grade-F{background:rgba(228,89,79,.15);color:var(--crit);border:1.5px solid var(--crit)}
+  .grade-meta b{display:block;font-size:19px;color:#fff}
+  .grade-meta span{color:var(--mute);font-size:14px}
+  .check-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+  .check-row:first-of-type{border-top:none}
+  .check-name{font-weight:600;color:#fff;font-size:15px}
+  .check-label{color:var(--mute);font-size:14px}
+  .pill{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;flex:none}
+  .pill.good{background:rgba(95,191,143,.14);color:var(--low)}
+  .pill.warn{background:rgba(224,152,75,.14);color:var(--high)}
+  .pill.fail{background:rgba(228,89,79,.14);color:var(--crit)}
+  .err-box{background:rgba(228,89,79,.08);border:1px solid rgba(228,89,79,.3);color:#F0B4AF;border-radius:10px;padding:16px 18px;margin-top:20px;font-size:15px}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--mute);margin-top:20px;font:500 14px var(--mono)}
+  .spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--gold);animation:sp 0.8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .result-cta{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="index.html"><svg width="30" height="30" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6DFA8"/><stop offset="1" stop-color="#B6822F"/></linearGradient></defs><path d="M100 8 L178 52 V148 L100 192 L22 148 V52 Z" fill="none" stroke="url(#hg)" stroke-width="14" stroke-linejoin="miter"/><path d="M145 72 L100 47 L55 72 L55 128 L100 153 L145 128 L118 128 L118 100 L82 100 L82 72 L118 72" fill="none" stroke="url(#hg)" stroke-width="11" stroke-linejoin="miter" stroke-linecap="square"/></svg>Codex Security</a>
+  <nav>
+    <a href="index.html">Home</a><a href="services.html">Services</a><a href="pricing.html">Pricing</a>
+    <a href="ssl-test.html" aria-current="page">Free SSL Test</a><a href="contact.html">Contact</a>
+    <a class="btn" href="contact.html" style="padding:10px 18px">Get a quote</a>
+  </nav>
+</div></header>
+
+<div class="wrap pagehead">
+  <div class="crumbs"><a href="index.html">Home</a> / <span aria-current="page">Free SSL Test</span></div>
+  <h1>Free SSL/TLS test</h1>
+  <p>Enter any website address below. We'll check its certificate, protocol and cipher strength and give it an instant grade, similar to Qualys SSL Labs.</p>
+</div>
+
+<section style="padding-top:10px">
+  <div class="wrap tool-wrap">
+    <div class="test-box">
+      <form id="sslForm" class="test-row" autocomplete="off">
+        <input id="domainInput" type="text" placeholder="example.com" aria-label="Domain to test" required>
+        <button id="runBtn" type="submit">Run free test</button>
+      </form>
+      <p class="disclosure">Checks TLS/SSL configuration only — not a full penetration test. Running a test shares the domain you entered with our security team so we can follow up if we spot a serious issue.</p>
+
+      <div id="loading" class="loading" hidden><span class="spin"></span><span id="loadingText">Testing...</span></div>
+      <div id="errorBox" class="err-box" hidden></div>
+
+      <div id="result">
+        <div class="grade-head">
+          <div id="gradeBadge" class="grade-badge">-</div>
+          <div class="grade-meta">
+            <b id="resultDomain">—</b>
+            <span id="resultScore">—</span>
+          </div>
+        </div>
+        <div id="checksList"></div>
+        <div class="result-cta">
+          <span class="disclosure" style="margin:0">Want a full security assessment, not just SSL?</span>
+          <a class="btn ghost" href="contact.html">Request a free consultation</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>&copy; 2026 Codex Security · Outplaying attackers</span><span><a href="mailto:contact@codexsecurity.co">contact@codexsecurity.co</a><a href="https://wa.me/447743740462">WhatsApp</a></span></div></footer>
+
+<script>
+const form = document.getElementById('sslForm');
+const input = document.getElementById('domainInput');
+const btn = document.getElementById('runBtn');
+const loading = document.getElementById('loading');
+const loadingText = document.getElementById('loadingText');
+const errorBox = document.getElementById('errorBox');
+const result = document.getElementById('result');
+
+const LABELS = {protocol:'Protocol', cipher:'Cipher strength', certificate:'Certificate', hsts:'HSTS header'};
+
+function pillClass(status){ return status === 'good' ? 'good' : status === 'warn' ? 'warn' : 'fail'; }
+function gradeClass(g){ return 'grade-' + g[0]; }
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const domain = input.value.trim();
+  if (!domain) return;
+
+  result.classList.remove('show');
+  errorBox.hidden = true;
+  btn.disabled = true;
+  loading.hidden = false;
+  loadingText.textContent = 'Testing ' + domain + '...';
+
+  try {
+    const res = await fetch('/api/ssl-check?domain=' + encodeURIComponent(domain));
+    const data = await res.json();
+
+    if (data.error) {
+      errorBox.textContent = data.error;
+      errorBox.hidden = false;
+      return;
+    }
+
+    document.getElementById('gradeBadge').textContent = data.grade;
+    document.getElementById('gradeBadge').className = 'grade-badge ' + gradeClass(data.grade);
+    document.getElementById('resultDomain').textContent = data.domain;
+    document.getElementById('resultScore').textContent = 'Score ' + data.score + '/100 · tested just now';
+
+    const list = document.getElementById('checksList');
+    list.innerHTML = '';
+    for (const key of ['protocol','cipher','certificate','hsts']) {
+      const c = data.checks[key];
+      const row = document.createElement('div');
+      row.className = 'check-row';
+      row.innerHTML = `<div><div class="check-name">${LABELS[key]}</div><div class="check-label">${c.label}</div></div><span class="pill ${pillClass(c.status)}">${c.status === 'good' ? 'Good' : c.status === 'warn' ? 'Needs attention' : 'Fail'}</span>`;
+      list.appendChild(row);
+    }
+
+    result.classList.add('show');
+  } catch (err) {
+    errorBox.textContent = 'Something went wrong running the test. Please try again in a moment.';
+    errorBox.hidden = false;
+  } finally {
+    btn.disabled = false;
+    loading.hidden = true;
+  }
+});
+</script>
+</body>
+</html>
