@@ -14,22 +14,29 @@
 //   4. Makes a lightweight HTTPS request to check for the HSTS header.
 //   5. Scores all of that into a letter grade (A+ down to F), loosely
 //      modelled on Qualys SSL Labs' public methodology, not identical to it.
-//   6. Emails a short lead/report to your inbox (see notifyTeam below) so
-//      your team knows a prospect just tested a domain.
+//   6. Notifies your team (see notifyTeam below) through either or both of:
+//      a Google Sheet row (no email/domain setup needed) and/or an email
+//      via Resend. Both are optional and independent of each other.
 //
 // No npm dependencies — everything here is a Node.js built-in module, plus
 // the global fetch() that's available in Vercel's Node 18+ runtime.
 //
-// Required environment variables (set in Vercel → Project → Settings →
-// Environment Variables):
-//   RESEND_API_KEY   API key from https://resend.com (free tier is plenty
-//                    for this volume). Without it, the tool still works —
-//                    it just logs the lead instead of emailing it.
-//   NOTIFY_EMAIL     Where reports are sent. Defaults to
-//                    contact@codexsecurity.co if not set.
-//   FROM_EMAIL       The verified sender address Resend will send from,
-//                    e.g. "Codex Security Tools <tools@codexsecurity.co>".
-//                    Requires verifying codexsecurity.co in Resend first.
+// Optional environment variables (set in Vercel → Project → Settings →
+// Environment Variables) — set as many or as few as you want:
+//   SHEET_WEBHOOK_URL   The "Web app" URL you get after deploying the
+//                       Google Apps Script in sheets/Code.gs (see
+//                       sheets/README.md for the 5-minute setup).
+//   RESEND_API_KEY      API key from https://resend.com.
+//   NOTIFY_EMAIL        Where the report email goes. Defaults to
+//                       contact@codexsecurity.co — but until that domain
+//                       is verified in Resend, email only actually
+//                       delivers to your Resend signup address, so set
+//                       this to that address for now if it differs.
+//   FROM_EMAIL          The sender Resend sends as, e.g.
+//                       "Codex Security Tools <tools@codexsecurity.co>".
+//                       Requires verifying codexsecurity.co in Resend.
+// If none of these are set, the tool still works for visitors — it just
+// logs each test to Vercel's function logs instead.
 
 const tls = require("tls");
 const https = require("https");
@@ -266,13 +273,71 @@ function computeGrade({ protocolG, cipherG, certG, hstsG }) {
   return { score: Math.round(weighted), grade };
 }
 
-// ---------- notify the team ----------
+// ---------- notify the team: Google Sheet row + email, both optional ----------
+//
+// Two independent channels, either or both can be turned on:
+//
+//  1. Google Sheet log — POSTs one row to a Google Apps Script "Web app"
+//     URL, which writes it into a sheet you own. See sheets/Code.gs and
+//     sheets/README.md for the one-time setup (~5 minutes, no coding).
+//     Turned on by setting SHEET_WEBHOOK_URL.
+//
+//  2. Email via Resend — sends a short report to your inbox. Turned on by
+//     setting RESEND_API_KEY. Important: until codexsecurity.co is
+//     verified as a domain in your Resend account, Resend will only
+//     actually deliver to the email address you used to sign up for
+//     Resend — not to an arbitrary address like contact@codexsecurity.co.
+//     If contact@codexsecurity.co IS your Resend signup address, this
+//     works immediately. Otherwise, set NOTIFY_EMAIL to your signup
+//     address for now, and switch it to contact@codexsecurity.co once you
+//     verify the domain in Resend (Resend dashboard → Domains).
+//
+// Both run in parallel and don't block each other — if one isn't
+// configured or fails, the other still goes through.
 
-async function notifyTeam({ domain, grade, score, ip, visitorIp, checks }) {
+async function logToSheet({ domain, grade, score, ip, visitorIp, checks }) {
+  const webhookUrl = process.env.SHEET_WEBHOOK_URL;
+  if (!webhookUrl) return { sent: false, reason: "no_webhook_url" };
+
+  const row = {
+    timestamp: new Date().toISOString(),
+    domain,
+    grade,
+    score,
+    resolvedIp: ip,
+    visitorIp: visitorIp || "unknown",
+    protocol: checks.protocolG.label,
+    cipher: checks.cipherG.label,
+    certificate: checks.certG.label,
+    hsts: checks.hstsG.label,
+  };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(row),
+      redirect: "follow", // Apps Script web apps answer via a 302 redirect
+    });
+    if (!res.ok) {
+      console.error("[ssl-check] Sheet webhook error:", res.status, await res.text());
+      return { sent: false, reason: "webhook_error" };
+    }
+    return { sent: true };
+  } catch (err) {
+    console.error("[ssl-check] Failed to log test to the sheet:", err);
+    return { sent: false, reason: "network_error" };
+  }
+}
+
+async function emailReport({ domain, grade, score, ip, visitorIp, checks }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { sent: false, reason: "no_api_key" };
+
   const toAddr = process.env.NOTIFY_EMAIL || "contact@codexsecurity.co";
   const fromAddr = process.env.FROM_EMAIL || "Codex Security Tools <onboarding@resend.dev>";
 
-  const summary = `
+  const html = `
     <h2 style="margin:0 0 12px">Free SSL test run</h2>
     <p><strong>Domain:</strong> ${domain}</p>
     <p><strong>Grade:</strong> ${grade} (${score}/100)</p>
@@ -288,25 +353,14 @@ async function notifyTeam({ domain, grade, score, ip, visitorIp, checks }) {
     <p style="color:#666;font-size:13px">This lead came from the free SSL test tool on your website. Consider following up, especially if the grade is C or below.</p>
   `;
 
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[ssl-check] RESEND_API_KEY not set — logging lead instead of emailing it:");
-    console.log({ domain, grade, score, ip, visitorIp });
-    return { sent: false, reason: "no_api_key" };
-  }
-
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: fromAddr,
-        to: [toAddr],
-        subject: `SSL test: ${domain} — Grade ${grade}`,
-        html: summary,
-      }),
+      body: JSON.stringify({ from: fromAddr, to: [toAddr], subject: `SSL test: ${domain} — Grade ${grade}`, html }),
     });
     if (!res.ok) {
       console.error("[ssl-check] Resend API error:", res.status, await res.text());
@@ -317,6 +371,11 @@ async function notifyTeam({ domain, grade, score, ip, visitorIp, checks }) {
     console.error("[ssl-check] Failed to send notification email:", err);
     return { sent: false, reason: "network_error" };
   }
+}
+
+async function notifyTeam(payload) {
+  const [sheetResult, emailResult] = await Promise.all([logToSheet(payload), emailReport(payload)]);
+  return { sheet: sheetResult, email: emailResult };
 }
 
 // ---------- in-memory rate limit (per serverless instance — good enough to
