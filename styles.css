@@ -175,3 +175,9 @@ footer a:hover{color:var(--gold)}
 
 .avatar-ph{width:100%;aspect-ratio:1;border-radius:9px;margin-bottom:16px;display:grid;place-items:center;background:linear-gradient(135deg,#0F2236,#132B44);border:1px solid var(--line);color:var(--gold);font:700 52px "Familjen Grotesk",sans-serif;letter-spacing:.04em}
 @media(min-width:981px){.team-grid{grid-template-columns:repeat(3,1fr)}}
+
+.proof{display:block;width:100%;padding:0;margin-bottom:14px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;cursor:zoom-in}
+.proof img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:top}
+.lightbox{position:fixed;inset:0;background:rgba(3,8,13,.92);display:grid;place-items:center;padding:24px;z-index:50;cursor:zoom-out}
+.lightbox[hidden]{display:none}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px}
