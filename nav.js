@@ -34,3 +34,24 @@
     if (window.innerWidth > 980) closeNav();
   });
 })();
+
+(function () {
+  var btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  var root = document.documentElement;
+  var label = btn.querySelector('.tt-label');
+  function current() { return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+  function paint() {
+    var light = current() === 'light';
+    btn.setAttribute('aria-label', light ? 'Switch to dark mode' : 'Switch to light mode');
+    btn.setAttribute('title', light ? 'Switch to dark mode' : 'Switch to light mode');
+    if (label) label.textContent = light ? 'Dark mode' : 'Light mode';
+  }
+  btn.addEventListener('click', function () {
+    var next = current() === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cx-theme', next); } catch (e) {}
+    paint();
+  });
+  paint();
+})();
