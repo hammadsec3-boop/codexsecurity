@@ -224,3 +224,8 @@ footer a:hover{color:var(--gold)}
 .ai-block h2{margin-bottom:14px}
 .ai-card{border-color:var(--gold-d)}
 @media(max-width:980px){.ai-block{grid-template-columns:1fr;gap:28px}}
+
+.li{display:inline-flex;align-items:center;gap:8px;margin-top:14px;color:var(--gold);font-weight:600;font-size:14.5px;text-decoration:none}
+.li svg{width:17px;height:17px}
+.li:hover{text-decoration:underline}
+.proof.cert img{aspect-ratio:4/3;object-fit:contain;object-position:center;background:#fff}
