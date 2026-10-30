@@ -213,3 +213,14 @@ footer a:hover{color:var(--gold)}
   .theme-toggle{width:100%;height:auto;justify-content:flex-start;padding:13px 2px;border:0;border-bottom:1px solid var(--line);border-radius:0;color:var(--mute);font-size:16px}
   .theme-toggle .tt-label{display:inline}
 }
+
+/* trust band + AI block */
+.trust-band{text-align:center;max-width:760px;margin:0 auto}
+.trust-band .eyebrow{margin-bottom:10px}
+.trust-num{font:800 clamp(64px,10vw,112px)/1 "Familjen Grotesk",sans-serif;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.03em;margin:6px 0 10px}
+.trust-band h2{margin-bottom:12px}
+.trust-band .lead{margin-left:auto;margin-right:auto;margin-bottom:28px}
+.ai-block{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
+.ai-block h2{margin-bottom:14px}
+.ai-card{border-color:var(--gold-d)}
+@media(max-width:980px){.ai-block{grid-template-columns:1fr;gap:28px}}
