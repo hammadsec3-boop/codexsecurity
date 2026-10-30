@@ -229,3 +229,14 @@ footer a:hover{color:var(--gold)}
 .li svg{width:17px;height:17px}
 .li:hover{text-decoration:underline}
 .proof.cert img{aspect-ratio:4/3;object-fit:contain;object-position:center;background:#fff}
+
+/* certifications: categories */
+.proof.rec-wide{background:var(--card-2)}
+.proof.rec-wide img{aspect-ratio:auto;object-fit:contain;height:auto;background:#fff}
+.rec .quote{font-size:15px;color:var(--ink);margin-top:2px}
+.rec .by{font-size:13.5px;color:var(--mute-d);margin-top:10px}
+.rec .by strong{color:var(--mute);font-weight:600}
+.rec .proof img{height:auto}
+.rec .proof:not(.cert):not(.rec-wide) img{aspect-ratio:4/3!important;object-fit:cover;object-position:top;width:100%}
+.rec .proof.cert img{aspect-ratio:4/3!important;object-fit:contain}
+.tabs button{white-space:nowrap}
