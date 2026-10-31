@@ -18,7 +18,7 @@
 <div class="wrap pagehead"><div class="crumbs"><a href="index.html">Home</a> / <span aria-current="page">Free tools</span></div><h1>Free security tools</h1><p>Quick checks you can run on your own domain, passwords and tokens. No sign-up.</p></div>
 <section style="padding-top:24px"><div class="wrap">
 <div class="tabs tool-tabs" role="group" aria-label="Free tools"><button aria-pressed="true" data-t="mail">Email spoofing checker</button><button aria-pressed="false" data-t="pw">Password checker</button><button aria-pressed="false" data-t="jwt">JWT decoder</button><button aria-pressed="false" data-t="ssl">SSL/TLS test</button></div>
-<p style="color:var(--mute-d);font-size:14px;margin-bottom:18px">Nothing you enter is stored by us. The password and JWT tools run in your browser.</p>
+<p style="color:var(--mute-d);font-size:14px;margin-bottom:18px">Passwords and tokens are checked in your browser and never sent to us. We are only notified which tool was used, plus the domain and result summary for the email checker.</p>
 <div class="tool-panel" id="p-mail"><div class="tool-box"><h3 style="margin-bottom:6px">Email spoofing checker</h3><p style="color:var(--mute);margin-bottom:16px">Checks the SPF, DMARC and common DKIM records for a domain, to show whether attackers can send email that looks like it came from you.</p>
 <form class="tool-row" id="mailF"><input id="mailD" placeholder="example.com" aria-label="Domain" required autocomplete="off"><button class="btn" type="submit" style="border:0;font:inherit;cursor:pointer">Check domain</button></form><div class="res" id="mailR" aria-live="polite"></div></div></div>
 <div class="tool-panel" id="p-pw" hidden><div class="tool-box"><h3 style="margin-bottom:6px">Password breach and strength checker</h3><p style="color:var(--mute);margin-bottom:16px">Estimates strength locally and checks the password against known breaches using the Have I Been Pwned range API. Only the first 5 characters of a hash are sent, never the password.</p>
@@ -35,6 +35,7 @@
 (function(){
 var $=function(i){return document.getElementById(i)};
 document.querySelectorAll(".tool-tabs button").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".tool-tabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});document.querySelectorAll(".tool-panel").forEach(function(p){p.hidden=p.id!=="p-"+b.dataset.t})})});
+function log(tool,data){try{fetch("/api/tool-log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,data:data}),keepalive:true}).catch(function(){})}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function item(cls,label,title,d){return '<div class="item"><span class="pill '+cls+'">'+label+'</span><div><b>'+esc(title)+'</b><span class="d">'+esc(d)+'</span></div></div>'}
 /* ---- email */
@@ -50,7 +51,7 @@ if(!spf)h+=item("bad","Missing","SPF","No SPF record. Anyone can send mail claim
 if(!dm)h+=item("bad","Missing","DMARC","No DMARC record at _dmarc."+d+". Receivers have no instruction to reject spoofed mail.");else{var p=(dm.match(/p=(\w+)/)||[])[1];if(p==="reject"||p==="quarantine"){h+=item("ok","Enforced","DMARC","Policy is p="+p+". "+dm);score++}else h+=item("warn","Monitor only","DMARC","Policy is p="+(p||"none")+", which reports but does not block spoofed mail. "+dm)}
 if(dk.length){h+=item("ok","Found","DKIM","Public key found for selector(s): "+dk.join(", "));score++}else h+=item("warn","Not found","DKIM","None of the common selectors returned a key. Your provider may use a custom selector, so this is not conclusive.");
 var v=!spf||!dm?["bad","Likely spoofable","Attackers can probably send email that appears to come from "+d+"."]:(score>=2.5?["ok","Well protected","SPF, DMARC and DKIM look healthy."]:["warn","Partly protected","Tighten the items marked above."]);
-R.innerHTML=item(v[0],"Result",v[1],v[2])+h}).catch(function(){R.innerHTML=item("bad","Error","Lookup failed","Could not reach the DNS resolver. Try again.")})});
+R.innerHTML=item(v[0],"Result",v[1],v[2])+h;log("email",{domain:d,result:v[1],spf:spf?"present":"missing",dmarc:dm?((dm.match(/p=(\w+)/)||[])[1]||"present"):"missing",dkim:dk.length?dk.join(", "):"not found"})}).catch(function(){R.innerHTML=item("bad","Error","Lookup failed","Could not reach the DNS resolver. Try again.")})});
 /* ---- password */
 var pw=$("pwI"),t;
 $("pwShow").onclick=function(){var s=pw.type==="password";pw.type=s?"text":"password";this.textContent=s?"Hide":"Show"};
@@ -58,7 +59,7 @@ function entropy(p){var c=0;if(/[a-z]/.test(p))c+=26;if(/[A-Z]/.test(p))c+=26;if
 function sha1(s){return crypto.subtle.digest("SHA-1",new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("").toUpperCase()})}
 pw.addEventListener("input",function(){var p=pw.value,B=$("pwBar"),T=$("pwTxt"),R=$("pwR");clearTimeout(t);R.innerHTML="";if(!p){B.style.width="0";T.textContent="Start typing to see the strength.";return}
 var e=entropy(p),l=e<35?["Weak","#C0182B",20]:e<55?["Fair","#E8590C",45]:e<75?["Good","#B88400",70]:["Strong","#2F9E6B",100];B.style.width=l[2]+"%";B.style.background=l[1];T.textContent=l[0]+" - about "+Math.round(e)+" bits of entropy, "+p.length+" characters.";
-t=setTimeout(function(){sha1(p).then(function(h){return fetch("https://api.pwnedpasswords.com/range/"+h.slice(0,5),{headers:{"Add-Padding":"true"}}).then(function(r){return r.text()}).then(function(x){var m=x.split("\n").map(function(l){return l.trim().split(":")}).filter(function(a){return a[0]===h.slice(5)&&+a[1]>0})[0];R.innerHTML=m?item("bad","Breached","Found in known data breaches",(+m[1]).toLocaleString()+" times. Do not use this password anywhere."):item("ok","Clear","Not found in known breaches","This does not guarantee safety, but it has not appeared in public leaks.")})}).catch(function(){R.innerHTML=item("warn","Offline","Breach check unavailable","Strength was estimated locally.")})},500)});
+t=setTimeout(function(){sha1(p).then(function(h){return fetch("https://api.pwnedpasswords.com/range/"+h.slice(0,5),{headers:{"Add-Padding":"true"}}).then(function(r){return r.text()}).then(function(x){var m=x.split("\n").map(function(l){return l.trim().split(":")}).filter(function(a){return a[0]===h.slice(5)&&+a[1]>0})[0];log("password",{strength:l[0],entropy_bits:Math.round(e),length:p.length,found_in_breaches:m?"yes ("+m[1]+" times)":"no"});R.innerHTML=m?item("bad","Breached","Found in known data breaches",(+m[1]).toLocaleString()+" times. Do not use this password anywhere."):item("ok","Clear","Not found in known breaches","This does not guarantee safety, but it has not appeared in public leaks.")})}).catch(function(){R.innerHTML=item("warn","Offline","Breach check unavailable","Strength was estimated locally.")})},500)});
 function gen(){var n=+$("genL").value,cs="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*-_=+",a=new Uint32Array(n),o="";crypto.getRandomValues(a);for(var i=0;i<n;i++)o+=cs[a[i]%cs.length];$("gen").value=o}
 $("genB").onclick=gen;$("genL").onchange=gen;gen();$("genC").onclick=function(){var b=this;navigator.clipboard&&navigator.clipboard.writeText($("gen").value).then(function(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy"},1500)})};
 /* ---- jwt */
@@ -73,6 +74,6 @@ if(P.exp==null)h+=item("bad","Risk","No expiry (exp)","A stolen token would work
 if(P.iat)h+=item("ok","Info","Issued at",f(P.iat));if(!P.aud&&!P.iss)h+=item("warn","Note","No iss or aud claim","Without issuer and audience checks, tokens may be accepted by the wrong service.");
 if(H.kid)h+=item("warn","Note","kid header present","Ensure the server does not use kid in file paths or SQL queries.");if(H.jku||H.x5u||H.jwk)h+=item("bad","Risk","Remote key header ("+(H.jku?"jku":H.x5u?"x5u":"jwk")+")","Attackers can point this to their own keys unless the server uses an allow-list.");
 if(/pass|secret|ssn|card/i.test(JSON.stringify(P)))h+=item("bad","Risk","Sensitive-looking claim","JWT payloads are readable by anyone. Do not store secrets in them.");
-R.innerHTML=h});
+R.innerHTML=h;clearTimeout(window._jt);window._jt=setTimeout(function(){log("jwt",{algorithm:H.alg||"unknown",has_exp:P.exp!=null?"yes":"no",expired:P.exp&&P.exp<now?"yes":"no",has_iss_or_aud:(P.iss||P.aud)?"yes":"no",remote_key_header:(H.jku||H.x5u||H.jwk)?"yes":"no"})},1500)});
 })();
 </script><script src="nav.js"></script></body></html>
