@@ -120,20 +120,20 @@
     <details class="faq"><summary>Is my business too small to be a target for hackers?</summary><p>Not at all. Small businesses are often targeted because they tend to have weaker security. Investing in cybersecurity is crucial no matter your size.</p></details>
   </div>
 </div></section>
-<section><div class="wrap"><div class="section-top"><div><h2>This is what a finding looks like</h2><p class="lead">Every issue comes with the request that proves it, the attacker impact and the exact fix.</p></div></div>
-<div class="finding"><div><span class="sev critical">Critical</span><div class="meta"><span class="tag">CVSS 3.1 &middot; 9.1</span><span class="tag">Broken access control (IDOR)</span><span class="tag">Retested &middot; Fix verified</span></div>
-<h3 style="font-size:26px;color:var(--head)">Any user can read other customers&rsquo; invoices</h3><p>The invoice API checks sign-in but not ownership, so changing the invoice number returns another company&rsquo;s invoice.</p>
-<h4>Fix</h4><p>Look up invoices by invoice ID and tenant ID, return 404 on a mismatch, and add a cross-tenant test.</p>
-<div class="cta" style="margin-top:22px"><a class="btn" href="Codex-Security-Sample-Pentest-Report.pdf" download>Download sample report (PDF)</a><a class="btn ghost" href="sample-report.html">See how an engagement runs</a></div>
-<p style="color:var(--mute-d);font-size:13px;margin-top:12px">Synthetic example. We never publish real client findings.</p></div>
-<pre class="code"><span class="k">GET</span> /api/v2/invoices/<span class="r">48213</span> HTTP/1.1
-Authorization: Bearer eyJ&hellip;[customer A]
+<section><div class="wrap"><div class="section-top"><div><h2>Inside a Codex finding</h2><p class="lead">Proof, impact and the exact fix, written so your engineers can act the same day.</p></div></div>
+<div class="finding"><div><span class="sev critical">Critical</span><div class="meta"><span class="tag">CXS-0417-F01</span><span class="tag">CVSS 3.1 &middot; 9.8</span><span class="tag">Broken authentication</span></div>
+<h3 style="font-size:26px;color:var(--head)">Password-reset tokens can be guessed, so any account can be taken over</h3><p>The token is only a Base64-encoded user ID and timestamp, so an attacker can forge one for any victim.</p>
+<h4>Fix</h4><p>Use a random 256-bit token, hash it at rest, expire it in 15 minutes and rate-limit the endpoint.</p>
+<div class="cta" style="margin-top:22px"><a class="btn" href="Codex-Security-Sample-Pentest-Report.pdf" download>Download the sample report</a><a class="btn ghost" href="sample-report.html">Preview the report</a></div>
+<p style="color:var(--mute-d);font-size:13px;margin-top:12px">Fictional example. We never publish real client reports.</p></div>
+<pre class="code"><span class="k">GET</span> /account/reset?token=<span class="r">NDIxOjE3NzA2NDA4MTI=</span>
+# decodes to "421:1770640812"  (user_id:timestamp)
+
+<span class="k">GET</span> /account/reset?token=<span class="r">MTc6MTc3MDY0MDgxMg==</span>
+# forged for victim, user id 17
 
 HTTP/1.1 <span class="r">200 OK</span>
-{ "invoice": 48213,
-  "tenant": "t-0932",
-  "total": "EUR 12,480.00",
-  "iban": "DE89 **** **** **** 4321" }</pre></div></div></section>
+"Choose a new password for jane.d@northwind.test"</pre></div></div></section>
 <section class="alt"><div class="wrap" style="text-align:center"><h2>Ready to find your vulnerabilities first?</h2><p class="lead" style="margin-left:auto;margin-right:auto">Tell us what you need protected. We'll reply with scope, timeline and a quote.</p><div class="cta" style="justify-content:center"><a class="btn" href="contact.html">Request a security assessment</a><a class="btn ghost" href="services.html">See all services</a></div></div></section>
 <footer><div class="wrap"><span>&copy; 2026 Codex Security · Outplaying attackers</span><span><a href="mailto:contact@codexsecurity.co">contact@codexsecurity.co</a><a href="https://wa.me/447743740462">WhatsApp</a><a href="https://www.linkedin.com/company/codex-security" target="_blank" rel="noopener">LinkedIn</a><a href="sample-report.html">Sample report</a></span></div></footer>
 <script src="nav.js"></script></body></html>
