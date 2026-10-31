@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.FROM_EMAIL || "Codex Security Tools <onboarding@resend.dev>",
+        from: process.env.FROM_EMAIL || "Codex Security Tools <contact@codexsecurity.co>",
         to: [process.env.NOTIFY_EMAIL || "contact@codexsecurity.co"],
         subject,
         html: `<h2>${esc(tool)}</h2>${rows}<hr><p><strong>Visitor IP:</strong> ${esc(ip)}</p><p><strong>Time:</strong> ${new Date().toISOString()}</p><p style="color:#666;font-size:12px">Sent from the free tools page. Passwords and tokens are never included.</p>`,
