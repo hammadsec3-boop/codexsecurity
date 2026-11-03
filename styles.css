@@ -280,3 +280,6 @@ textarea.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;w
 .card.step{padding:20px}.card.step h3{font-size:18px}.card.step p{font-size:14.5px}
 @media(max-width:980px){#steps{grid-template-columns:repeat(2,1fr)!important}}
 @media(max-width:560px){#steps{grid-template-columns:1fr!important}}
+
+.li.mail{display:flex;margin-bottom:0;word-break:break-all}
+.li.mail+.li{margin-top:10px}
