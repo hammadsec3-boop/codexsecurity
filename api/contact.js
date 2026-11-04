@@ -19,6 +19,8 @@ module.exports = async (req, res) => {
   const name = String(b.name || "").trim().slice(0, 120);
   const email = String(b.email || "").trim().slice(0, 200);
   const service = String(b.service || "").trim().slice(0, 120);
+  const date = String(b.date || "").trim().slice(0, 30);
+  const win = String(b.window || "").trim().slice(0, 30);
   const message = String(b.message || "").trim().slice(0, 5000);
   if (!name || !message || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     res.statusCode = 400; return res.end(JSON.stringify({ error: "Please fill in your name, a valid email and a message." }));
@@ -26,7 +28,7 @@ module.exports = async (req, res) => {
   const key = process.env.RESEND_API_KEY;
   if (!key) { console.error("[contact] RESEND_API_KEY missing"); res.statusCode = 500; return res.end(JSON.stringify({ error: "Mail service not configured." })); }
 
-  const html = `<h2>New website enquiry</h2><p><strong>Name:</strong> ${esc(name)}</p><p><strong>Email:</strong> ${esc(email)}</p><p><strong>Service:</strong> ${esc(service)}</p><p><strong>Message:</strong></p><p>${esc(message).replace(/\n/g, "<br>")}</p><hr><p style="color:#666;font-size:12px">IP ${esc(ip)} · ${new Date().toISOString()}</p>`;
+  const html = `<h2>New website enquiry</h2><p><strong>Name:</strong> ${esc(name)}</p><p><strong>Email:</strong> ${esc(email)}</p><p><strong>Service:</strong> ${esc(service)}</p><p><strong>Preferred call:</strong> ${esc(date) || "no date"} · ${esc(win) || "any time"}</p><p><strong>Message:</strong></p><p>${esc(message).replace(/\n/g, "<br>")}</p><hr><p style="color:#666;font-size:12px">IP ${esc(ip)} · ${new Date().toISOString()}</p>`;
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
